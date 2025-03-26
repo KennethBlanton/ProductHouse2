@@ -1,0 +1,48 @@
+{
+    "name": "claude-app-dev-platform",
+    "version": "0.1.0",
+    "private": true,
+    "description": "End-to-end application development platform powered by Claude",
+    "workspaces": [
+      "frontend",
+      "backend"
+    ],
+    "scripts": {
+      "dev": "npm run dev --workspace=frontend",
+      "build": "npm run build --workspace=frontend",
+      "start": "npm run start --workspace=frontend",
+      "lint": "npm run lint --workspace=frontend",
+      "deploy:frontend": "npm run deploy --workspace=frontend",
+      "deploy:backend": "npm run deploy --workspace=backend",
+      "deploy": "npm run deploy:backend && npm run deploy:frontend",
+      "test": "npm run test --workspace=frontend && npm run test --workspace=backend"
+    },
+    "devDependencies": {
+      "husky": "^8.0.3",
+      "lint-staged": "^15.0.2",
+      "prettier": "^3.0.3"
+    },
+    "engines": {
+      "node": ">=18.0.0"
+    },
+    "husky": {
+      "hooks": {
+        "pre-commit": "lint-staged"
+      }
+    },
+    "lint-staged": {
+      "*.{js,jsx,ts,tsx}": [
+        "prettier --write",
+        "eslint --fix"
+      ],
+      "*.{json,md}": [
+        "prettier --write"
+      ]
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/yourusername/claude-app-dev-platform.git"
+    },
+    "author": "Your Name",
+    "license": "MIT"
+  }
