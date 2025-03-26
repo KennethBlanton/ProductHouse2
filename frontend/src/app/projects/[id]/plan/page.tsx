@@ -12,7 +12,7 @@ type PlanPageProps = {
 
 export const generateMetadata = async ({ params }: PlanPageProps): Promise<Metadata> => {
   return {
-    title: `Generate Project Plan | Claude App Dev Platform`,
+    title: `Generate Project Plan | Product House`,
     description: 'Generate a comprehensive project plan with Claude',
   };
 };

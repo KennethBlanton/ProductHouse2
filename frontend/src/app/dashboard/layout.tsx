@@ -3,8 +3,8 @@ import DashboardLayout from '@/components/dashboard/DashboardLayout';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Claude App Dev Platform',
-    default: 'Dashboard | Claude App Dev Platform',
+    template: '%s | Product House',
+    default: 'Dashboard | Product House',
   },
   description: 'Claude App Development Platform Dashboard',
 };

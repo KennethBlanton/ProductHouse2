@@ -1,19 +1,5 @@
-import { useContext } from 'react';
-import { useAuth as useAuthProvider, UserType } from '@/components/auth/AuthProvider';
-
-/**
- * Custom hook for using authentication throughout the application
- * This hook wraps the context from AuthProvider for easier access
- */
-export function useAuth() {
-  const context = useAuthProvider();
-  
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider component');
-  }
-  
-  return context;
-}
+import { useAuth, type UserType } from '@/components/auth/AuthProvider';
 
 export type { UserType };
+export { useAuth };
 export default useAuth;

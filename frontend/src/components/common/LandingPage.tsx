@@ -48,7 +48,7 @@ export default function LandingPage() {
         <Container maxW="container.xl">
           <Flex justify="space-between" align="center">
             <Heading size="md" color="brand.500">
-              Claude App Dev Platform
+              Product House
             </Heading>
             <HStack spacing={4}>
               <Link href="/login" passHref>
@@ -86,7 +86,7 @@ export default function LandingPage() {
                   bgGradient={heroGradient}
                   bgClip="text"
                 >
-                  Transform Ideas into Development Plans with Claude
+                  Transform Ideas into Development Plans with Product House
                 </Heading>
                 <Text fontSize="xl" color={textColor}>
                   An end-to-end platform that helps you refine your app ideas, generate comprehensive project plans, and facilitate the development process.
@@ -341,7 +341,7 @@ export default function LandingPage() {
           >
             <VStack align={{ base: 'center', md: 'flex-start' }} spacing={4}>
               <Heading size="md" color="brand.500">
-                Claude App Dev Platform
+                Product House
               </Heading>
               <Text>
                 Transform your app ideas into comprehensive development plans.
@@ -373,7 +373,7 @@ export default function LandingPage() {
           </Flex>
           <Box mt={12} textAlign="center">
             <Text fontSize="sm">
-              &copy; {new Date().getFullYear()} Claude App Dev Platform. All rights reserved.
+              &copy; {new Date().getFullYear()} Product House. All rights reserved.
             </Text>
           </Box>
         </Container>

@@ -25,7 +25,7 @@ import { useForm } from 'react-hook-form';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaGoogle, FaGithub, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { useAuth } from '@/components/auth/AuthProvider';
+import useAuth from '@/hooks/useAuth';
 
 type RegisterFormValues = {
   email: string;
@@ -150,7 +150,7 @@ export default function RegisterForm() {
                           message: 'Password must be at least 8 characters',
                         },
                         pattern: {
-                          value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                          value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/,
                           message:
                             'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
                         },

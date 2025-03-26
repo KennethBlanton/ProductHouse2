@@ -11,7 +11,7 @@ type RefinePageProps = {
 
 export const generateMetadata = async ({ params }: RefinePageProps): Promise<Metadata> => {
   return {
-    title: `Refine Project Idea | Claude App Dev Platform`,
+    title: `Refine Project Idea | Product House`,
     description: 'Refine your app concept through a conversation with Claude',
   };
 };

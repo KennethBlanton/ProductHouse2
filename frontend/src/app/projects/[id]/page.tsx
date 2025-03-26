@@ -11,7 +11,7 @@ type ProjectPageProps = {
 
 export const generateMetadata = async ({ params }: ProjectPageProps): Promise<Metadata> => {
   return {
-    title: `Project Details | Claude App Dev Platform`,
+    title: `Project Details | Product House`,
     description: 'View and manage your app development project',
   };
 };

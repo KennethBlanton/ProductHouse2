@@ -171,7 +171,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader borderBottomWidth="1px">
-            Claude App Dev Platform
+            Product House
           </DrawerHeader>
           <DrawerBody p={0}>
             <Sidebar onClose={onClose} display={{ base: 'block', md: 'none' }} />
