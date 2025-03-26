@@ -22,7 +22,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/components/auth/AuthProvider';
+import useAuth from '@/hooks/useAuth';
 
 type ConfirmRegistrationFormValues = {
   username: string;

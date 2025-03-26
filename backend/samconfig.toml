@@ -1,0 +1,44 @@
+# samconfig.toml
+version = 0.1
+
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "claude-app-dev-platform"
+s3_bucket = "claude-app-deployment-bucket"
+s3_prefix = "backend"
+region = "us-east-1"
+capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
+parameter_overrides = [
+    "Stage=dev"
+]
+confirm_changeset = true
+disable_rollback = false
+
+[staging]
+[staging.deploy]
+[staging.deploy.parameters]
+stack_name = "claude-app-dev-platform-staging"
+s3_bucket = "claude-app-staging-bucket"
+s3_prefix = "backend"
+region = "us-east-1"
+capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
+parameter_overrides = [
+    "Stage=staging"
+]
+confirm_changeset = true
+disable_rollback = false
+
+[prod]
+[prod.deploy]
+[prod.deploy.parameters]
+stack_name = "claude-app-dev-platform-prod"
+s3_bucket = "claude-app-prod-bucket"
+s3_prefix = "backend"
+region = "us-east-1"
+capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
+parameter_overrides = [
+    "Stage=prod"
+]
+confirm_changeset = true
+disable_rollback = true

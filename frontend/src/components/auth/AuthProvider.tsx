@@ -1,47 +1,53 @@
-'use client';
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Auth, Hub } from 'aws-amplify';
 import { useRouter, usePathname } from 'next/navigation';
-import { Spinner, Center } from '@chakra-ui/react';
+import { Spinner, Center, useToast } from '@chakra-ui/react';
 
-// Define types for user and auth context
+// Enhanced User Type
 export interface UserType {
   username: string;
   email: string;
   sub: string;
+  firstName?: string;
+  lastName?: string;
+  profilePicture?: string;
   attributes?: Record<string, any>;
 }
 
+// Enhanced Auth Context Type
 interface AuthContextType {
   user: UserType | null;
   loading: boolean;
   error: Error | null;
   signIn: (username: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
-  signUp: (username: string, password: string, email: string) => Promise<any>;
+  signUp: (userData: {
+    username: string, 
+    password: string, 
+    email: string,
+    firstName?: string,
+    lastName?: string
+  }) => Promise<any>;
   confirmSignUp: (username: string, code: string) => Promise<any>;
   forgotPassword: (username: string) => Promise<any>;
   forgotPasswordSubmit: (username: string, code: string, newPassword: string) => Promise<any>;
   resendConfirmationCode: (username: string) => Promise<any>;
+  updateProfile: (userData: Partial<UserType>) => Promise<any>;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<any>;
+  deleteAccount: () => Promise<any>;
+  enableMFA: () => Promise<any>;
+  disableMFA: () => Promise<any>;
 }
 
 // Create auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Custom hook to use auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
 // Protected routes that require authentication
 const protectedRoutes = [
   '/dashboard',
   '/projects',
+  '/profile',
+  '/settings',
 ];
 
 // Public routes that don't need redirection when authenticated
@@ -50,6 +56,7 @@ const publicAuthRoutes = [
   '/register',
   '/forgot-password',
   '/reset-password',
+  '/confirm-registration',
 ];
 
 // Auth provider component
@@ -59,6 +66,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<Error | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const toast = useToast();
 
   // Check if the current route is protected
   const isProtectedRoute = () => {
@@ -90,13 +98,18 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Check current authenticated user
     const checkUser = async () => {
       try {
-        const userData = await Auth.currentAuthenticatedUser();
+        const userData = await Auth.currentAuthenticatedUser({
+          bypassCache: true  // Ensures we get the latest user data
+        });
         
         // Format user data
         const formattedUser: UserType = {
           username: userData.username,
           email: userData.attributes.email,
           sub: userData.attributes.sub,
+          firstName: userData.attributes.given_name,
+          lastName: userData.attributes.family_name,
+          profilePicture: userData.attributes.picture,
           attributes: userData.attributes,
         };
         
@@ -158,15 +171,23 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (username: string, password: string, email: string) => {
+  const signUp = async (userData: {
+    username: string, 
+    password: string, 
+    email: string,
+    firstName?: string,
+    lastName?: string
+  }) => {
     try {
       setLoading(true);
       setError(null);
       const result = await Auth.signUp({
-        username,
-        password,
+        username: userData.username,
+        password: userData.password,
         attributes: {
-          email,
+          email: userData.email,
+          given_name: userData.firstName,
+          family_name: userData.lastName,
         },
       });
       return result;
@@ -235,6 +256,191 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Update user profile
+  const updateProfile = async (userData: Partial<UserType>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Get current user
+      const currentUser = await Auth.currentAuthenticatedUser();
+      
+      // Prepare attributes to update
+      const attributes: Record<string, string> = {};
+      if (userData.firstName) attributes.given_name = userData.firstName;
+      if (userData.lastName) attributes.family_name = userData.lastName;
+      if (userData.email) attributes.email = userData.email;
+      
+      // Update user attributes
+      await Auth.updateUserAttributes(currentUser, attributes);
+      
+      // Refresh user data
+      await checkUser();
+      
+      toast({
+        title: 'Profile Updated',
+        description: 'Your profile has been successfully updated.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      const err = error as Error;
+      setError(err);
+      
+      toast({
+        title: 'Update Failed',
+        description: err.message,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Change password
+  const changePassword = async (oldPassword: string, newPassword: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const currentUser = await Auth.currentAuthenticatedUser();
+      await Auth.changePassword(currentUser, oldPassword, newPassword);
+      
+      toast({
+        title: 'Password Changed',
+        description: 'Your password has been successfully updated.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      const err = error as Error;
+      setError(err);
+      
+      toast({
+        title: 'Password Change Failed',
+        description: err.message,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete account
+  const deleteAccount = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const currentUser = await Auth.currentAuthenticatedUser();
+      await Auth.deleteUser(currentUser);
+      
+      toast({
+        title: 'Account Deleted',
+        description: 'Your account has been permanently deleted.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      // Redirect to home page
+      router.push('/');
+    } catch (error) {
+      const err = error as Error;
+      setError(err);
+      
+      toast({
+        title: 'Account Deletion Failed',
+        description: err.message,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Enable Multi-Factor Authentication
+  const enableMFA = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const currentUser = await Auth.currentAuthenticatedUser();
+      await Auth.setupTOTP(currentUser);
+      
+      toast({
+        title: 'MFA Setup',
+        description: 'Multi-Factor Authentication has been enabled.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      const err = error as Error;
+      setError(err);
+      
+      toast({
+        title: 'MFA Setup Failed',
+        description: err.message,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Disable Multi-Factor Authentication
+  const disableMFA = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const currentUser = await Auth.currentAuthenticatedUser();
+      await Auth.disableMFA(currentUser);
+      
+      toast({
+        title: 'MFA Disabled',
+        description: 'Multi-Factor Authentication has been disabled.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      const err = error as Error;
+      setError(err);
+      
+      toast({
+        title: 'MFA Disable Failed',
+        description: err.message,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Auth context value
   const value = {
     user,
@@ -247,6 +453,11 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     forgotPassword,
     forgotPasswordSubmit,
     resendConfirmationCode,
+    updateProfile,
+    changePassword,
+    deleteAccount,
+    enableMFA,
+    disableMFA,
   };
 
   // Show loading spinner while initializing auth

@@ -1,0 +1,33 @@
+{
+    "name": "claude-app-dev-platform-backend",
+    "version": "0.1.0",
+    "description": "Backend services for Claude App Development Platform",
+    "main": "index.js",
+    "scripts": {
+      "deploy:dev": "sam build && sam deploy --stage dev --parameter-overrides Stage=dev",
+      "deploy:staging": "sam build && sam deploy --stage staging --parameter-overrides Stage=staging",
+      "deploy:prod": "sam build && sam deploy --stage prod --parameter-overrides Stage=prod",
+      "test": "jest",
+      "lint": "eslint ."
+    },
+    "dependencies": {
+      "aws-sdk": "^2.1046.0",
+      "uuid": "^8.3.2"
+    },
+    "devDependencies": {
+      "aws-sam-cli": "^1.37.0",
+      "jest": "^27.4.7",
+      "eslint": "^8.7.0"
+    },
+    "engines": {
+      "node": ">=18.0.0"
+    },
+    "keywords": [
+      "serverless",
+      "aws",
+      "lambda",
+      "dynamodb"
+    ],
+    "author": "Your Name",
+    "license": "MIT"
+  }

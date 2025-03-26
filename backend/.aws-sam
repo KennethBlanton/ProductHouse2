@@ -1,0 +1,130 @@
+# backend/template.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Claude App Development Platform - User Management Services
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 256
+    Runtime: nodejs18.x
+    Environment:
+      Variables:
+        USERS_TABLE: !Ref UsersTable
+        STAGE: !Ref Stage
+
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment stage
+
+Resources:
+  # DynamoDB Users Table
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${Stage}-claude-app-users"
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # IAM Role for Lambda Functions
+  UserManagementLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: dynamodb-access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                Resource: !GetAtt UsersTable.Arn
+        - PolicyName: lambda-logging
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+
+  # Lambda Functions
+  CreateUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/functions/users/
+      Handler: createUser.handler
+      Role: !GetAtt UserManagementLambdaRole.Arn
+      Events:
+        CreateUser:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: post
+
+  GetUserProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/functions/users/
+      Handler: getUserProfile.handler
+      Role: !GetAtt UserManagementLambdaRole.Arn
+      Events:
+        GetUserProfile:
+          Type: Api
+          Properties:
+            Path: /users/{userId}
+            Method: get
+
+  UpdateUserProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/functions/users/
+      Handler: updateUserProfile.handler
+      Role: !GetAtt UserManagementLambdaRole.Arn
+      Events:
+        UpdateUserProfile:
+          Type: Api
+          Properties:
+            Path: /users/{userId}
+            Method: put
+
+Outputs:
+  UsersTableArn:
+    Description: ARN of the Users DynamoDB Table
+    Value: !GetAtt UsersTable.Arn
+    Export:
+      Name: !Sub "${Stage}-UsersTableArn"
+
+  CreateUserApi:
+    Description: API Gateway endpoint for creating users
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/users"
+
+  GetUserProfileApi:
+    Description: API Gateway endpoint for getting user profile
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/users/{userId}"
